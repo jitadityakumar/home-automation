@@ -100,7 +100,7 @@ while consErrors < errorTimeout:
     # HACK
     # Insert value into file
     currentTime = datetime.now()
-    currentTimeFormat = currentTime.strftime("%Y-%m-%d %H:%M:%S")
+    currentTimeFormat = currentTime.strftime("%Y-%m-%d %H:%M")
     fh = open(filename,'a')
     writeLine = currentTimeFormat+","+lightValue+"\n"
     fh.write(writeLine)
