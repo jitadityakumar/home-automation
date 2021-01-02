@@ -33,13 +33,14 @@ logging.info('Connection to DB successful')
 
 # Setup ESP32 details
 lightURL = "http://192.168.1.128/light"
-# Sleep time is 10 seconds
-sleepTime = 10
+# Time interval at which readings will be taken (in seconds)
+sleepTime = 300
+# Time interval after which a failed attempt will be re-tried (in seconds)
 retryTime = 5
 # Setup consequtive errors after which program should quit
 errorTimeout = 20
 consErrors = 0
-# Setup http request timeout
+# Setup http request timeout (in seconds)
 httpTimeout = 5
 
 logging.info("Setup Complete")
@@ -51,19 +52,26 @@ logging.info("HTTP timeout  : %s seconds",httpTimeout)
 
 # Create new run in DB
 now = datetime.now()
-crDate = now.strftime("%Y-%m-%d %H:%M:%S")
-sql = "insert into tLightRuns (cr_date) values (%s)"
-val = (str(crDate))
-try:
-    mycursor.execute(sql, val)
-    mydb.commit()
-    rowID = mycursor.lastrowid
-except Exception as e:
-    logging.error(str(e))
-    logging.error("Unable to add run to DB, exiting")
-    quit()
+#crDate = now.strftime("%Y-%m-%d %H:%M:%S")
+#sql = "insert into tLightRuns (cr_date) values (%s)"
+#val = (str(crDate))
+#try:
+#    mycursor.execute(sql, val)
+#    mydb.commit()
+#    rowID = mycursor.lastrowid
+#except Exception as e:
+#    logging.error(str(e))
+#    logging.error("Unable to add run to DB, exiting")
+#    quit()
+#
+#logger.info("Starting run %s",rowID)
 
-logger.info("Starting run %s",rowID)
+# HACK
+# Create output file
+filenameDate = now.strftime("%Y-%m-%d_%H-%M-%S")
+filename = "/home/jkumar/Projects/logs/lightTracker/data/output."+filenameDate+".data"
+fh = open(filename,'w')
+fh.close()
 
 while consErrors < errorTimeout:
 
@@ -89,6 +97,14 @@ while consErrors < errorTimeout:
     consErrors = 0
 
     # Insert value into DB
+    # HACK
+    # Insert value into file
+    currentTime = datetime.now()
+    currentTimeFormat = currentTime.strftime("%Y-%m-%d %H:%M:%S")
+    fh = open(filename,'a')
+    writeLine = currentTimeFormat+","+lightValue+"\n"
+    fh.write(writeLine)
+    fh.close()
 
     # Set to sleep before next request
     time.sleep(sleepTime)
